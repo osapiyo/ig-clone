@@ -13,7 +13,7 @@ const AddNewPost = ({ navigation }) => {
 
 const Header = ({ navigation }) => (
   <View style={styles.headerContainer}>
-    <TouchableOpacity onPress={navigation.goBack()}>
+    <TouchableOpacity onPress={() => navigation.goBack()}>
       <Image
         source={{
           uri: 'https://img.icons8.com/ios-glyphs/90/ffffff/back.png',
