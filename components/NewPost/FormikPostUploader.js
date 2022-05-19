@@ -1,10 +1,21 @@
 import { View, Text, Image, TextInput, Button } from 'react-native'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import * as Yup from 'yup'
 import { Formik } from 'formik'
 import { Divider } from 'react-native-elements'
-import { NavigationContainer } from '@react-navigation/native'
 import validUrl from 'valid-url'
+import { auth, db } from '../../firebase'
+import {
+  collection,
+  doc,
+  getDocs,
+  query,
+  setDoc,
+  where,
+} from 'firebase/firestore'
+// import firebase from 'firebase'
+// import * as firebase from 'firebase'
+// import firebase from 'firebase/app'
 
 const PLACEHOLDER_IMG =
   'https://socialistmodernism.com/wp-content/uploads/2017/07/placeholder-image.png'
@@ -16,6 +27,49 @@ const uploadPostSchema = Yup.object().shape({
 
 const FormikPostUploader = ({ navigation }) => {
   const [thumbnailUrl, setThumbnailUrl] = useState(PLACEHOLDER_IMG)
+  const [currentLoggedInUser, setCurrentLoggedInUser] = useState(null)
+
+  const getUserName = async () => {
+    const user = auth.currentUser
+    const usersRef = collection(db, 'users')
+    const queryUser = query(usersRef, where('owner_uid', '==', user.uid))
+    const querySnapshot = await getDocs(queryUser)
+    const unsubscribe = await querySnapshot.docs.map((doc) => {
+      setCurrentLoggedInUser({
+        username: doc.data().username,
+        username: doc.data().profile_picture,
+      })
+    })
+    return unsubscribe
+  }
+  useEffect(() => {
+    getUserName()
+  }, [])
+
+  // サブコレクションを追加する方法が間違っていると思われる
+  const uploadPostToFirebase = async (imageUrl, caption) => {
+    const subCollectionRef = collection(
+      db,
+      'users',
+      auth.currentUser.email,
+      'posts'
+    )
+    const unsubscribe = await setDoc(doc(subCollectionRef), {
+      imageUrl: imageUrl,
+      user: currentLoggedInUser.username,
+      profile_picture: currentLoggedInUser.profile_picture,
+      owner_uid: auth.currentUser.uid,
+      caption: caption,
+      // createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      likes: 0,
+      likes_by_users: [],
+      comments: [],
+    })
+
+    navigation.goBack()
+
+    return unsubscribe
+  }
 
   return (
     <Formik
@@ -23,7 +77,8 @@ const FormikPostUploader = ({ navigation }) => {
       onSubmit={(values) => {
         console.log(values)
         console.log('Your post was submitted successfully ')
-        navigation.goBack()
+
+        uploadPostToFirebase(values.imageUrl, values.caption)
       }}
       validationSchema={uploadPostSchema}
       validateOnMount={true}

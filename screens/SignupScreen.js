@@ -1,11 +1,11 @@
 import { View, Text, Image, StyleSheet } from 'react-native'
 import React from 'react'
-import LoginForm from '../components/loginScreen/LoginForm'
+import SignupForm from '../components/signupScreen/SignupForm'
 
 const INSTAGRAM_LOGO =
   '../assets/instagram-logo/Instagram_Glyph_Gradient_RGB.png'
 
-const LoginScreen = ({ navigation }) => (
+const SignupScreen = ({ navigation }) => (
   <View style={styles.container}>
     <View style={styles.logoContainer}>
       <Image
@@ -13,7 +13,7 @@ const LoginScreen = ({ navigation }) => (
         style={{ height: 100, width: 100 }}
       />
     </View>
-    <LoginForm navigation={navigation} />
+    <SignupForm navigation={navigation} />
   </View>
 )
 
@@ -30,4 +30,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default LoginScreen
+export default SignupScreen
